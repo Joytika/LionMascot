@@ -1,0 +1,222 @@
+/* Joytika Bhargo                 Nedlam's Workshop: Lion Mascot
+ * Goal: Final Code for Talking Lion Mascot
+ */
+ 
+#include <SPI.h>
+#include <Adafruit_VS1053.h>
+#include <SD.h>
+
+// These are the pins used for the breakout example
+#define BREAKOUT_RESET  9      // VS1053 reset pin (output)
+#define BREAKOUT_CS     10     // VS1053 chip select pin (output)
+#define BREAKOUT_DCS    8      // VS1053 Data/command select pin (output)
+// These are the pins used for the music maker shield
+#define SHIELD_RESET  -1      // VS1053 reset pin (unused!)
+#define SHIELD_CS     7      // VS1053 chip select pin (output)
+#define SHIELD_DCS    6      // VS1053 Data/command select pin (output)
+
+// These are common pins between breakout and shield
+#define CARDCS 4     // Card chip select pin
+// DREQ should be an Int pin, see http://arduino.cc/en/Reference/attachInterrupt
+#define DREQ 3       // VS1053 Data request, ideally an Interrupt pin
+
+Adafruit_VS1053_FilePlayer musicPlayer = 
+  // create breakout-example object!
+  //Adafruit_VS1053_FilePlayer(BREAKOUT_RESET, BREAKOUT_CS, BREAKOUT_DCS, DREQ, CARDCS);
+  // create shield-example object!
+  Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
+
+//////////The source for code above is player_interrupts.
+
+  const int blueButton=    14;    //blue button        
+  const int green1Button=  15;    //1st green button 
+  const int green2Button=  16;    //2nd green button 
+  const int yellow1Button= 17;    //1st yellow button 
+  const int yellow2Button= 18;    //2nd yellow button
+  const int redButton=     2;    //red button 
+  
+  int blueButtonState= 0; 
+  int green1ButtonState= 0;
+  int green2ButtonState= 0;
+  int yellow1ButtonState= 0;
+  int yellow2ButtonState= 0;
+  int redButtonState= 0;
+
+const int servo3= 9;  //jaw servo connected to pin 9
+const int servo1= 5; //left eye
+const int servo2= 10; //right eye 
+  int angle;
+  int pwm;
+
+void setup() 
+{
+  pinMode(blueButton, INPUT);
+  pinMode(green1Button, INPUT);
+  pinMode(green2Button, INPUT);
+  pinMode(yellow1Button, INPUT);
+  pinMode(yellow2Button, INPUT);
+  pinMode(redButton, INPUT);
+  
+  pinMode(servo3, OUTPUT);
+  pinMode(servo1, OUTPUT);
+  pinMode(servo2, OUTPUT);
+  servoPulse(servo1, 90); //center the eyes in setup 
+  servoPulse(servo2, 90); //center the eyes in setup
+ 
+  Serial.begin(9600);
+  Serial.println("Adafruit VS1053 Library Test");
+
+  // initialise the music player
+  if (! musicPlayer.begin()) 
+  { // initialise the music player
+     Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
+     while (1);
+  }
+   
+   Serial.println(F("VS1053 found"));
+   
+   musicPlayer.sineTest(0x44, 500);    // Make a tone to indicate VS1053 is working
+ 
+
+if (!SD.begin(CARDCS)) 
+  {
+    Serial.println(F("SD failed, or not present"));
+    while (1);  // don't do anything more
+  }
+  Serial.println("SD OK!");
+  
+  //Set volume for left, right channels. lower numbers == louder volume!
+  musicPlayer.setVolume(2,2); 
+
+ if (! musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT))
+    Serial.println(F("DREQ pin is not an interrupt pin"));
+}
+
+void loop ()
+{ 
+  blueButtonState = digitalRead(blueButton);
+  green1ButtonState= digitalRead(green1Button);
+  green2ButtonState= digitalRead(green2Button);
+  yellow1ButtonState= digitalRead(yellow1Button);
+  yellow2ButtonState= digitalRead(yellow2Button);
+  redButtonState= digitalRead(redButton);
+
+  if (blueButtonState==LOW) //if button is pressed
+  {
+    if (! musicPlayer.startPlayingFile("TRACK001.wav")) 
+    {
+    Serial.println("Could not open file TRACK001.wav");
+    while (1);
+    }
+    Serial.println(F("Started playing TRACK001"));
+    delay(900); //when actual audio starts
+    while (musicPlayer.playingMusic) 
+      { 
+        Serial.println("Blue Button was Pressed");
+        for (angle = 0; angle <= 20; angle += 2)  
+          { servoPulse(servo3, angle); }
+        for (angle = 20; angle >= 0; angle -= 2)  
+          { servoPulse(servo3, angle); }
+      }            
+  } //ends if 
+  else if (green1ButtonState==LOW)
+  {
+    if (! musicPlayer.startPlayingFile("TRACK002.wav")) 
+    {
+    Serial.println("Could not open file TRACK002.wav");
+    while (1);
+    }
+    Serial.println(F("Started playing TRACK002"));
+    while (musicPlayer.playingMusic) 
+      {
+        Serial.println("1st Green Button was Pressed");
+        for (angle = 0; angle <= 20; angle += 2)  
+          { servoPulse(servo3, angle); }
+        for (angle = 20; angle >= 0; angle -= 2)  
+          { servoPulse(servo3, angle); } 
+       }        
+  } //ends first else if
+  else if (green2ButtonState==LOW)
+  {
+    if (! musicPlayer.startPlayingFile("TRACK003.wav")) 
+    {
+    Serial.println("Could not open file TRACK003.wav");
+    while (1);
+    }
+    Serial.println(F("Started playing TRACK003"));
+    delay(900); ///delay.9 sec for audio
+    while (musicPlayer.playingMusic) 
+      {
+        Serial.println("2nd Green Button was Pressed");
+        for (angle = 0; angle <= 20; angle += 2)  
+          { servoPulse(servo3, angle); }
+        for (angle = 20; angle >= 0; angle -= 2)  
+          { servoPulse(servo3, angle); }
+       }        
+  } //ends second else if
+  else if (yellow1ButtonState==LOW)
+  {
+     if (! musicPlayer.startPlayingFile("track004.m4a")) 
+    {
+    Serial.println("Could not open file track004.m4a");
+    while (1);
+    }
+    Serial.println(F("Started playing Track004"));
+    delay(1400);
+    while (musicPlayer.playingMusic) 
+      {
+        Serial.println("1st Yellow Button was Pressed");
+        for (angle = 0; angle <= 20; angle += 2)  
+          { servoPulse(servo3, angle); }
+        for (angle = 20; angle >= 0; angle -= 2)  
+          { servoPulse(servo3, angle); } 
+        }
+  } 
+  else if (yellow2ButtonState==LOW)
+  {
+     if (! musicPlayer.startPlayingFile("TRACK005.wav")) 
+    {
+    Serial.println("Could not open file TRACK005.wav");
+    while (1);
+    }
+    Serial.println(F("Started playing TRACK005"));
+    delay(20);
+    while (musicPlayer.playingMusic) 
+      {
+        Serial.println("2nd Yellow Button was Pressed");
+        for (angle = 0; angle <= 20; angle += 2)  
+          { servoPulse(servo3, angle); }
+        for (angle = 20; angle >= 0; angle -= 2)  
+          { servoPulse(servo3, angle); }
+      } 
+  }
+  else if (redButtonState==LOW)
+  {
+     if (! musicPlayer.startPlayingFile("track006.m4a")) 
+    {
+    Serial.println("Could not open file track006.m4a");
+    while (1);
+    }
+    Serial.println(F("Started playing Track006"));
+    delay(1800);
+    while (musicPlayer.playingMusic) 
+      {
+        Serial.println("Red Button was Pressed");
+        for (angle = 0; angle <= 20; angle += 2)  
+          { servoPulse(servo3, angle); }
+        for (angle = 20; angle >= 0; angle -= 2)  
+          { servoPulse(servo3, angle); }
+      } 
+  } //ends last else if
+} //ends whole void loop section
+
+
+///Function for moving the servos
+void servoPulse (int servo, int angle)
+{
+ pwm = (angle*11) + 500;      // Convert angle to microseconds
+ digitalWrite(servo, HIGH);
+ delayMicroseconds(pwm);
+ digitalWrite(servo, LOW);
+ delay(50);                   // Refresh cycle of servo
+}
