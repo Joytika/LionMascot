@@ -42,9 +42,7 @@ Adafruit_VS1053_FilePlayer musicPlayer =
   int yellow2ButtonState= 0;
   int redButtonState= 0;
 
-const int servo3= 9;  //jaw servo connected to pin 9
-const int servo1= 5; //left eye
-const int servo2= 10; //right eye 
+const int servo3= 9;  //jaw servo
   int angle;
   int pwm;
 
@@ -58,10 +56,6 @@ void setup()
   pinMode(redButton, INPUT);
   
   pinMode(servo3, OUTPUT);
-  pinMode(servo1, OUTPUT);
-  pinMode(servo2, OUTPUT);
-  servoPulse(servo1, 90); //center the eyes in setup 
-  servoPulse(servo2, 90); //center the eyes in setup
  
   Serial.begin(9600);
   Serial.println("Adafruit VS1053 Library Test");
